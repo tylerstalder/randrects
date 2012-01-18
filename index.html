@@ -1,11 +1,12 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <title>Random Rectangles</title> 
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0/jquery.mobile-1.0.min.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/mobile/1.0/jquery.mobile-1.0.min.js"></script>
     <style>
-      * {
-        margin:0;
-        padding:0;
-      }
-
       #container {
         width:320px;
         height:480px;
@@ -38,23 +39,32 @@
     </style>
   </head>
   <body>
-    <div id="container">
-      <div id="grid_canvas"></div>
-      <div id="stats">
-        <ul>
-          <li>Columns(<span id="col_count"></span>)</li>
-          <li>Rows(<span id="row_count"></span>)</li>
-          <li>Rectangles(<span id="rect_count">0</span>)</li>
-        </ul>
-        <ul>
-          <li>Initial Lines(<span id="line_count">0</span>)</li>
-          <li>Optimized Lines(<span id="optline_count">0</span>)</li>
-          <li>Lines Saved(<span id="saveline_count">0</span>)</li>
-        </ul>
-      </div>
-    </div>
 
-    <script src="./jquery.min.js"></script>
+    <div data-role="page">
+
+      <div data-role="header">
+        <h1>Random Rectangles</h1>
+      </div>
+
+      <div data-role="content">
+        <div id="container">
+          <div id="grid_canvas"></div>
+          <div id="stats">
+            <ul>
+              <li>Columns(<span id="col_count"></span>)</li>
+              <li>Rows(<span id="row_count"></span>)</li>
+              <li>Rectangles(<span id="rect_count">0</span>)</li>
+            </ul>
+            <ul>
+              <li>Initial Lines(<span id="line_count">0</span>)</li>
+              <li>Optimized Lines(<span id="optline_count">0</span>)</li>
+              <li>Lines Saved(<span id="saveline_count">0</span>)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <script>
 
       var GRID = {
@@ -273,4 +283,3 @@
     </script>
   </body>
 </html>
-
