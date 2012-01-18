@@ -10,7 +10,6 @@
       #container {
         width:320px;
         height:480px;
-        background-color:#eee;
       }
 
       #grid_canvas {
@@ -19,7 +18,7 @@
       }
 
       .cell {
-        width: 32px;
+        width: 25px;
         height: 20px;
         float:left;
         text-align:center;
@@ -30,11 +29,12 @@
 
       #stats ul {
         margin-top:15px;
+        margin-left:-30px;
       }
 
       #stats ul li{
+        font-size:12px;
         list-style-type: none;
-        padding-left:25px;
       }
     </style>
   </head>
@@ -84,7 +84,7 @@
 
         GRID.columns = columnCount;
         GRID.rows = rowCount;
-        $('#' + el).css('width', (columnCount * 32) + 'px');
+        $('#' + el).css('width', (columnCount * 25) + 'px');
 
         for (y=0; y < rowCount; y++) {
           GRID.cost[y] = [];
