@@ -65,6 +65,10 @@
       };
 
       var setGrid = function(el, columnCount, rowCount) {
+        var x = 0,
+            y = 0,
+            id = '';
+
         $('#col_count').html(columnCount);
         $('#row_count').html(rowCount);
 
@@ -72,10 +76,10 @@
         GRID.rows = rowCount;
         $('#' + el).css('width', (columnCount * 32) + 'px');
 
-        for (var y=0; y < rowCount; y++) {
+        for (y=0; y < rowCount; y++) {
           GRID.cost[y] = [];
-          for (var x=0; x < columnCount; x++) {
-            var id = x + 'x' + y;
+          for (x=0; x < columnCount; x++) {
+            id = x + 'x' + y;
             $('#' + el).append('<div id="' + id + '" class="cell">O</div>');
             GRID.cost[y][x] = 'O';
           }
@@ -84,12 +88,16 @@
 
       var line = function(start, end) {
         var len = (start.x === end.x) ? end.y - start.y : end.x - start.x;
-        var node = "";
+        var node = "",
+            i = 0,
+            ycoord = 0,
+            xcoord = 0;
+
         $('#line_count').html(parseInt($('#line_count').html())+1);
 
         if (start.x === end.x) { // vertical lines
-          for (var i = 0; i <= len; i++) {
-            var ycoord = start.y + i;
+          for (i = 0; i <= len; i++) {
+            ycoord = start.y + i;
             node = start.x + 'x' + ycoord;
             if (GRID.cost[ycoord] && GRID.cost[ycoord][start.x]) {
               GRID.cost[ycoord][start.x] = 'X';
@@ -97,8 +105,8 @@
             }
           }
         } else { // horizontal lines
-          for (var i = 0; i <= len; i++) {
-            var xcoord = start.x + i;
+          for (i = 0; i <= len; i++) {
+            xcoord = start.x + i;
             node = xcoord + 'x' + start.y;
             if (GRID.cost[start.y] && GRID.cost[start.y][xcoord]) {
               GRID.cost[start.y][xcoord] = 'X';
@@ -127,14 +135,22 @@
       };
 
       var optimize = function() {
-        var re = /X+/g;
-        var lines = [];
-        var scores = "";
-        var row = [];
-        var column = [];
+        var re = /X+/g,
+            lines = [],
+            scores = "",
+            row = [],
+            column = [],
+            i = 0,
+            j = 0,
+            long = {},
+            start = {},
+            end = {},
+            len = 0,
+            ycoord = 0,
+            xcoord = 0;
 
         // horiz
-        for ( var i=0; i < GRID.rows; i++) {
+        for ( i=0; i < GRID.rows; i++) {
           row = GRID.cost[i].join('');
           while ((scores = re.exec(row))!= null) {
             lines.push({
@@ -146,9 +162,9 @@
         }
 
         // vert
-        for ( var i =0; i < GRID.columns; i++) {
+        for (i = 0; i < GRID.columns; i++) {
           column = [];
-          for (var j=0; j < GRID.rows; j++) {
+          for (j=0; j < GRID.rows; j++) {
             column = column + GRID.cost[j][i];
           }
           while ((scores = re.exec(column))!= null) {
@@ -165,22 +181,22 @@
         } else {
           lines.sort(function(a,b){return a.linelen - b.linelen});
 
-          var long = lines.pop();
+          long = lines.pop();
           GRID.lines.push(long);
-          var start = long.start;
-          var end = long.end;
-          var len = long.linelen;
+          start = long.start;
+          end = long.end;
+          len = long.linelen;
 
           if (start.x === end.x) { // vertical lines
-            for (var i = 0; i <= len; i++) {
-              var ycoord = start.y + i;
+            for (i = 0; i <= len; i++) {
+              ycoord = start.y + i;
               if (GRID.cost[ycoord] && GRID.cost[ycoord][start.x]) {
                 GRID.cost[ycoord][start.x] = 'O';
               }
             }
           } else { // horizontal lines
-            for (var i = 0; i <= len; i++) {
-              var xcoord = start.x + i;
+            for (i = 0; i <= len; i++) {
+              xcoord = start.x + i;
               if (GRID.cost[start.y] && GRID.cost[start.y][xcoord]) {
                 GRID.cost[start.y][xcoord] = 'O';
               }
@@ -253,7 +269,6 @@
       $('#optline_count').html(GRID.lines.length);
       $('#saveline_count').html(parseInt($('#line_count').html()) -
       GRID.lines.length);
-
 
     </script>
   </body>
