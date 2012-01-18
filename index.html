@@ -1,0 +1,276 @@
+<html>
+  <head>
+    <style>
+      * {
+        margin:0;
+        padding:0;
+      }
+
+      #container {
+        width:320px;
+        height:480px;
+        background-color:#eee;
+      }
+
+      #grid_canvas {
+        margin-left:auto;
+        margin-right:auto;
+      }
+
+      .cell {
+        width: 32px;
+        height: 20px;
+        float:left;
+        text-align:center;
+      }
+      #grid_canvas, #stats, #stats ul {
+        float:left;
+      }
+
+      #stats ul {
+        margin-top:15px;
+      }
+
+      #stats ul li{
+        list-style-type: none;
+        padding-left:25px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="grid_canvas"></div>
+      <div id="stats">
+        <ul>
+          <li>Columns(<span id="col_count"></span>)</li>
+          <li>Rows(<span id="row_count"></span>)</li>
+          <li>Rectangles(<span id="rect_count">0</span>)</li>
+        </ul>
+        <ul>
+          <li>Initial Lines(<span id="line_count">0</span>)</li>
+          <li>Optimized Lines(<span id="optline_count">0</span>)</li>
+          <li>Lines Saved(<span id="saveline_count">0</span>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="./jquery.min.js"></script>
+    <script>
+
+      var GRID = {
+        columns: 0,
+        rows: 0,
+        cost: [],
+        lines: []
+      };
+
+      var setGrid = function(el, columnCount, rowCount) {
+        var x = 0,
+            y = 0,
+            id = '';
+
+        $('#col_count').html(columnCount);
+        $('#row_count').html(rowCount);
+
+        GRID.columns = columnCount;
+        GRID.rows = rowCount;
+        $('#' + el).css('width', (columnCount * 32) + 'px');
+
+        for (y=0; y < rowCount; y++) {
+          GRID.cost[y] = [];
+          for (x=0; x < columnCount; x++) {
+            id = x + 'x' + y;
+            $('#' + el).append('<div id="' + id + '" class="cell">O</div>');
+            GRID.cost[y][x] = 'O';
+          }
+        }
+      };
+
+      var line = function(start, end) {
+        var len = (start.x === end.x) ? end.y - start.y : end.x - start.x;
+        var node = "",
+            i = 0,
+            ycoord = 0,
+            xcoord = 0;
+
+        $('#line_count').html(parseInt($('#line_count').html())+1);
+
+        if (start.x === end.x) { // vertical lines
+          for (i = 0; i <= len; i++) {
+            ycoord = start.y + i;
+            node = start.x + 'x' + ycoord;
+            if (GRID.cost[ycoord] && GRID.cost[ycoord][start.x]) {
+              GRID.cost[ycoord][start.x] = 'X';
+              $('#' + node).css('backgroundColor', 'red');
+            }
+          }
+        } else { // horizontal lines
+          for (i = 0; i <= len; i++) {
+            xcoord = start.x + i;
+            node = xcoord + 'x' + start.y;
+            if (GRID.cost[start.y] && GRID.cost[start.y][xcoord]) {
+              GRID.cost[start.y][xcoord] = 'X';
+              $('#' + node).css('backgroundColor', 'red');
+            }
+          }
+        }
+      };
+
+      var rect = function(origin, width, height) {
+        var a = origin;
+        var b = {
+          x: origin.x + width -1,
+          y: origin.y + height -1
+        };
+        if ( origin.x < GRID.columns && origin.y < GRID.rows) {
+          $('#rect_count').html(parseInt($('#rect_count').html())+1);
+          // Draw 4 lines for a rectagle
+          line(origin, {x: b.x, y: origin.y});
+          line({x: b.x, y: origin.y + 1}, b);
+          line({x: origin.x, y:b.y}, {x:b.x - 1, y:b.y});
+          line({x:origin.x, y:origin.y + 1}, {x:origin.x, y:b.y -1});
+        } else {
+          console.log("Rectangle origin out of bounds");
+        }
+      };
+
+      var optimize = function() {
+        var re = /X+/g,
+            lines = [],
+            scores = "",
+            row = [],
+            column = [],
+            i = 0,
+            j = 0,
+            long = {},
+            start = {},
+            end = {},
+            len = 0,
+            ycoord = 0,
+            xcoord = 0;
+
+        // horiz
+        for ( i=0; i < GRID.rows; i++) {
+          row = GRID.cost[i].join('');
+          while ((scores = re.exec(row))!= null) {
+            lines.push({
+              linelen:scores[0].length,
+              start:{x:scores.index, y:i},
+              end: {x:scores.index + scores[0].length, y:i}
+            });
+          }
+        }
+
+        // vert
+        for (i = 0; i < GRID.columns; i++) {
+          column = [];
+          for (j=0; j < GRID.rows; j++) {
+            column = column + GRID.cost[j][i];
+          }
+          while ((scores = re.exec(column))!= null) {
+            lines.push({
+              linelen:scores[0].length,
+              start:{x:i, y:scores.index},
+              end: {x:i, y:scores.index + scores[0].length - 1}
+            });
+          }
+        }
+
+        if (lines.length === 0) {
+          return;
+        } else {
+          lines.sort(function(a,b){return a.linelen - b.linelen});
+
+          long = lines.pop();
+          GRID.lines.push(long);
+          start = long.start;
+          end = long.end;
+          len = long.linelen;
+
+          if (start.x === end.x) { // vertical lines
+            for (i = 0; i <= len; i++) {
+              ycoord = start.y + i;
+              if (GRID.cost[ycoord] && GRID.cost[ycoord][start.x]) {
+                GRID.cost[ycoord][start.x] = 'O';
+              }
+            }
+          } else { // horizontal lines
+            for (i = 0; i <= len; i++) {
+              xcoord = start.x + i;
+              if (GRID.cost[start.y] && GRID.cost[start.y][xcoord]) {
+                GRID.cost[start.y][xcoord] = 'O';
+              }
+            }
+          }
+
+          optimize();
+        }
+
+      };
+
+      var randRect = function() {
+        var x = Math.floor(Math.random()*(GRID.columns-1));
+        var y = Math.floor(Math.random()*(GRID.rows-1));
+        var width = Math.floor(Math.random()*GRID.columns);
+        var height = Math.floor(Math.random()*GRID.rows);
+        rect({x:x,y:y}, width, height);
+      };
+
+      var party = function(count) {
+        for (var i = 0; i < count; i++) {
+          randRect();
+        }
+      };
+
+      // Setup
+      setGrid('grid_canvas', 10, 20);
+
+      // Tests
+      /*
+      // 2 Square
+      rect({x:0,y:0}, 4, 4);
+      rect({x:4,y:0}, 4, 4);
+      // 3 Square
+      rect({x:0,y:0}, 4, 4);
+      rect({x:4,y:0}, 4, 4);
+      rect({x:8,y:0}, 4, 4);
+      // Stacked
+      rect({x:0,y:0}, 4, 4);
+      rect({x:0,y:0}, 4, 4);
+      // Rect
+      rect({x:0,y:0}, 4, 5);
+      // 2 Rect
+      rect({x:0,y:0}, 4, 5);
+      rect({x:0,y:0}, 4, 5);
+      // Sample
+      rect({x:0,y:0}, 10, 10);
+      rect({x:0,y:10}, 10, 10);
+      rect({x:11,y:11}, 9, 9);
+      // Max
+      rect({x:0,y:0}, 20, 2);
+      rect({x:0,y:2}, 20, 2);
+      rect({x:0,y:4}, 20, 2);
+      rect({x:0,y:6}, 20, 2);
+      rect({x:0,y:8}, 20, 2);
+      // Point
+      rect({x:0,y:0}, 1, 1);
+      // Random
+      randRect();
+      // Random Count
+      party(30);
+      */
+
+      var userVal = prompt('How many rectangles would you like to draw?', 20);
+
+      party(userVal);
+
+      optimize();
+
+      $('#optline_count').html(GRID.lines.length);
+      $('#saveline_count').html(parseInt($('#line_count').html()) -
+      GRID.lines.length);
+
+    </script>
+  </body>
+</html>
+
